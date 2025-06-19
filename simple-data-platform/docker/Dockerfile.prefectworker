@@ -1,0 +1,22 @@
+FROM prefecthq/prefect:2.19.5-python3.10
+
+# Debugging tools
+RUN apt-get update
+RUN apt-get install -y bind9-host
+RUN apt-get install -y iputils-ping
+RUN apt-get install -y dnsutils
+RUN apt-get install -y nmap
+
+RUN pip install poetry
+
+COPY pyproject.toml pyproject.toml
+COPY poetry.lock poetry.lock
+
+ENV POETRY_VIRTUALENVS_CREATE=TRUE
+ENV POETRY_VIRTUALENVS_IN_PROJECT=TRUE
+
+RUN poetry install --only main,backend,prefectworker
+
+COPY prefect data-platform-flows
+
+CMD ["prefect", "worker", "start", "--pool", "light-work-pool"]

@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build: ./frontend
+    networks:
+      - backend-network
+    ports:
+      - "8050:8050"
+
+  backend:
+    build: ./backend
+    networks:
+      - backend-network
+
+networks:
+  backend-network:
+    driver: "bridge"

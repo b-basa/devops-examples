@@ -1,0 +1,26 @@
+services:
+  frontend:
+    build: 
+      dockerfile: ./docker/Dockerfile.frontend
+      context: .
+    ports:
+      - "80:80"
+    networks:
+      - simple-web
+    depends_on:
+      - backend
+    restart: always
+
+  backend:
+    build: 
+      context: .
+      dockerfile: ./docker/Dockerfile.backend
+    ports:
+      - "8000:8000"
+    networks:
+      - simple-web
+    restart: always
+
+networks:
+  simple-web:
+    driver: bridge

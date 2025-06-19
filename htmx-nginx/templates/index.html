@@ -1,0 +1,10 @@
+{% extends "./base.html" %}
+
+{% block content %}
+    <button hx-get="/api/items" hx-target="#item-list" hx-swap="innerHTML">
+        Load Items
+    </button>
+    <div id="item-list">
+        <!-- Fetched items will appear here -->
+    </div>
+{% endblock %}

@@ -1,0 +1,82 @@
+name: simple-platform
+services:
+  backend:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    volumes:
+      - ./database:/app/database
+      - ./data:/app/data
+    networks:
+      - back-network
+      - data-network
+    env_file:
+      - .env
+    command: ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "5000"]
+
+  frontend:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    networks:
+      - public-network
+      - back-network
+    depends_on:
+      - backend
+    command: ["bokeh", "serve", "frontend/main.py", "--allow-websocket-origin=*", "--prefix=/frontend", "--port", "8050"]
+
+  nginx:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.nginx
+    ports:
+      - "80:80"
+    networks:
+      - public-network
+    depends_on:
+      - frontend
+    command: ["nginx", "-g", "daemon off;"]
+
+  prefect-server:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.prefectserver
+    environment:
+      - PREFECT_SERVER__TELEMETRY__ENABLED=false
+      - PREFECT_UI_SERVE_BASE=/prefect
+      - PREFECT_UI_URL=http://localhost/prefect
+      - PREFECT_UI_API_URL=http://localhost/prefect/api
+      - PREFECT_SERVER_API_HOST=0.0.0.0
+    networks:
+      - prefect-network
+      - public-network
+    command: ["prefect", "server", "start", "--host", "0.0.0.0"]
+
+  prefect-worker:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.prefectworker
+    environment:
+      - PREFECT__BACKEND=server
+      - PREFECT_API_URL=http://prefect-server:4200/api
+    depends_on:
+      - prefect-server
+    networks:
+      - prefect-network
+      - data-network
+    command: ["prefect", "worker", "start", "--pool", "light-work-pool"]
+
+networks:
+  public-network:
+    driver: bridge
+  back-network:
+    driver: bridge
+  data-network:
+    driver: bridge
+  prefect-network:
+    driver: bridge
