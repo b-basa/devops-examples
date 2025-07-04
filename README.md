@@ -1,5 +1,7 @@
 # devops-examples
 
+![system diagram](simple-data-platform/system-diagram.png)
+
 To run any of the projects, launch a shell in their root folders, then use the docker compose commands.
 
 ## Example 1: Frontend depends on backend
@@ -16,5 +18,3 @@ Explanation: [README.md](frontend-backend-compose/README.md)
 
 Folder: [simple-data-platform](simple-data-platform)\
 Explanation: [README.md](simple-data-platform/README.md)
-
-![system diagram](simple-data-platform/system-diagram.png)
